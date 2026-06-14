@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IG Studio — Analytics Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --glass-bg: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.08);
+      --glass-hover: rgba(255,255,255,0.07);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #080808;
+      color: #e8e8e8;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .font-display { font-family: 'Space Grotesk', sans-serif; }
+
+    /* Background grain + grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.02) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glass card */
+    .glass {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .glass-hover:hover {
+      background: var(--glass-hover);
+      border-color: rgba(255,255,255,0.14);
+      transition: all 0.2s ease;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: rgba(10,10,10,0.95);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(40px);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* Nav item */
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      border: 1px solid transparent;
+      text-decoration: none;
+    }
+    .nav-item:hover { color: #ccc; background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); }
+    .nav-item.active { color: #fff; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
+    .nav-item .nav-icon { width: 16px; text-align: center; font-size: 14px; }
+
+    /* Stat cards */
+    .stat-card {
+      padding: 20px;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .stat-card.accent-card::after {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Stat value */
+    .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #444;
+      margin-bottom: 8px;
+    }
+    .stat-delta { font-size: 11.5px; margin-top: 6px; color: #555; }
+    .stat-delta.up { color: #6ee7b7; }
+    .stat-delta.down { color: #f87171; }
+
+    /* Chart card */
+    .chart-card {
+      padding: 24px;
+      border-radius: 20px;
+    }
+    .chart-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: #ddd;
+      margin-bottom: 4px;
+    }
+    .chart-note { font-size: 11.5px; color: #444; margin-top: 10px; }
+
+    /* Posts grid */
+    .post-card {
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+    .post-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+    .post-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+    .post-thumb-placeholder {
+      width: 100%; aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 36px; height: 36px;
+      border: 2px solid rgba(255,255,255,0.08);
+      border-top-color: rgba(255,255,255,0.6);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Tag cloud */
+    .tag-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 12px; font-weight: 500;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #888; cursor: default;
+      transition: all 0.15s;
+      margin: 3px;
+    }
+    .tag-pill:hover { background: rgba(255,255,255,0.09); color: #ccc; }
+    .tag-pill.big { font-size: 13.5px; padding: 5px 14px; color: #ddd; background: rgba(255,255,255,0.08); }
+    .tag-pill strong { color: #fff; }
+
+    /* List items */
+    .list-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .list-item:last-child { border-bottom: none; }
+    .list-item-label { font-size: 13px; color: #aaa; flex: 1; }
+    .list-item-bar-wrap { flex: 2; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; }
+    .list-item-bar { height: 100%; background: rgba(255,255,255,0.4); border-radius: 2px; transition: width 0.6s ease; }
+    .list-item-value { font-size: 12px; font-weight: 600; color: #ddd; min-width: 40px; text-align: right; }
+
+    /* Compare */
+    .compare-select {
+      width: 100%; padding: 10px 14px; border-radius: 10px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      color: #ccc; font-size: 13px; font-family: 'Inter', sans-serif;
+      appearance: none; cursor: pointer;
+    }
+    .compare-select:focus { outline: none; border-color: rgba(255,255,255,0.2); }
+    option { background: #111; }
+
+    /* Heatmap */
+    .heatmap-table { border-collapse: collapse; width: 100%; font-size: 10px; }
+    .heatmap-table th { color: #555; font-weight: 500; padding: 4px 2px; text-align: center; font-size: 9.5px; }
+    .heatmap-cell {
+      width: 28px; height: 24px; border-radius: 4px;
+      text-align: center; line-height: 24px; color: rgba(255,255,255,0.5);
+      cursor: default; transition: transform 0.1s;
+    }
+    .heatmap-cell:hover { transform: scale(1.3); z-index: 10; position: relative; }
+
+    /* Buttons */
+    .btn-primary {
+      background: #fff; color: #000;
+      padding: 10px 20px; border-radius: 10px;
+      font-size: 13.5px; font-weight: 600;
+      border: none; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-primary:hover { background: #e0e0e0; transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent; color: #888;
+      padding: 8px 16px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: all 0.2s;
+    }
+    .btn-ghost:hover { color: #ccc; border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); }
+
+    /* Score badge */
+    .score-badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 8px; border-radius: 6px;
+      font-size: 11px; font-weight: 700;
+    }
+    .score-a { background: rgba(110,231,183,0.12); color: #6ee7b7; }
+    .score-b { background: rgba(248,113,113,0.12); color: #f87171; }
+    .score-c { background: rgba(251,191,36,0.12); color: #fbbf24; }
+
+    /* Input */
+    .form-input {
+      width: 100%; padding: 12px 16px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; color: #e0e0e0; font-size: 14px; font-family: 'Inter', sans-serif;
+    }
+    .form-input:focus { outline: none; border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.07); }
+    .form-input::placeholder { color: #333; }
+
+    /* Tabs */
+    .tab-btn {
+      padding: 7px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 500;
+      cursor: pointer; border: 1px solid transparent; transition: all 0.15s; color: #555;
+      background: transparent;
+    }
+    .tab-btn.active { color: #fff; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); }
+    .tab-btn:hover:not(.active) { color: #999; background: rgba(255,255,255,0.03); }
+
+    /* Winner banner */
+    .winner-banner {
+      padding: 16px 24px; border-radius: 14px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      text-align: center; font-size: 14px; font-weight: 600; color: #ddd;
+      margin-top: 20px;
+    }
+
+    /* Engagement ring */
+    .eng-ring-wrap {
+      display: flex; align-items: center; justify-content: center;
+      position: relative; width: 120px; height: 120px;
+    }
+    .eng-center {
+      position: absolute; text-align: center;
+    }
+
+    /* Pulse dot */
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #6ee7b7;
+      position: relative;
+    }
+    .pulse-dot::after {
+      content: ''; position: absolute; inset: -3px;
+      border-radius: 50%; background: rgba(110,231,183,0.3);
+      animation: pulse-ring 1.5s ease-out infinite;
+    }
+    @keyframes pulse-ring { to { transform: scale(2.5); opacity: 0; } }
+
+    /* Section transitions */
+    .section { animation: fadeUp 0.3s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Mobile sidebar */
+    @media (max-width: 768px) {
+      .sidebar { position: fixed; left: -260px; top: 0; bottom: 0; width: 260px; z-index: 100; transition: left 0.3s ease; }
+      .sidebar.open { left: 0; }
+      .main-wrap { margin-left: 0 !important; }
+      .mobile-header { display: flex !important; }
+    }
+    .mobile-header { display: none; }
+    .hidden { display: none !important; }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 4px; border-radius: 2px; background: rgba(255,255,255,0.05);
+      overflow: hidden; margin-top: 8px;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 2px; background: rgba(255,255,255,0.35);
+      transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* Tooltip */
+    [data-tip] { position: relative; }
+    [data-tip]:hover::after {
+      content: attr(data-tip);
+      position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+      background: rgba(20,20,20,0.95); color: #ddd;
+      padding: 5px 10px; border-radius: 7px; font-size: 11px; white-space: nowrap;
+      border: 1px solid rgba(255,255,255,0.08); z-index: 100;
+      pointer-events: none;
+    }
+
+    /* Engagement rate colors */
+    .er-great { color: #6ee7b7; }
+    .er-good { color: #fbbf24; }
+    .er-low { color: #f87171; }
+
+    /* Post modal */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-card {
+      background: #111; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px; max-width: 600px; width: 100%; max-height: 90vh;
+      overflow-y: auto; animation: scaleIn 0.2s ease;
+    }
+    @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* Search input */
+    .search-input {
+      width: 100%; padding: 9px 14px 9px 36px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px; color: #ccc; font-size: 13px; font-family: 'Inter', sans-serif;
+    }
+    .search-input:focus { outline: none; border-color: rgba(255,255,255,0.15); }
+    .search-input::placeholder { color: #333; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(20,20,20,0.98); border: 1px solid rgba(255,255,255,0.12);
+      color: #ddd; padding: 12px 20px; border-radius: 12px; font-size: 13.5px;
+      z-index: 300; animation: toastIn 0.3s ease;
+      backdrop-filter: blur(20px); white-space: nowrap;
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  </style>
+</head>
+<body>
+<div class="relative z-10">
+
+  <!-- SETUP SCREEN -->
+  <div id="setup-screen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="glass border border-white/8 rounded-3xl p-10 max-w-md w-full text-center">
+      <div class="w-14 h-14 rounded-2xl glass border border-white/10 flex items-center justify-center text-2xl mx-auto mb-6">📊</div>
+      <h1 class="font-display text-3xl font-bold text-white mb-2 tracking-tight">IG Studio</h1>
+      <p class="text-sm text-neutral-500 mb-8">Connect your Instagram Business account to unlock full analytics.</p>
+      <div class="space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">Instagram User ID</label>
+          <input type="text" id="input-user-id" class="form-input" placeholder="e.g. 17841400000000000"/>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">Access Token</label>
+          <input type="password" id="input-token" class="form-input" placeholder="Long-lived access token"/>
+        </div>
+      </div>
+      <button class="btn-primary w-full mt-6" onclick="saveCredentials()">Connect Account →</button>
+      <div class="flex items-center gap-2 mt-5 justify-center">
+        <div class="pulse-dot"></div>
+        <p class="text-xs text-neutral-600">Credentials stored locally — never sent to any server</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hidden flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="sidebar fixed left-0 top-0 bottom-0 w-[220px] z-50 flex flex-col" id="sidebar">
+      <div class="p-5 border-b border-white/5">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-white/8 flex items-center justify-center text-sm border border-white/10">📊</div>
+          <span class="font-display font-bold text-white text-[15px] tracking-tight">IG Studio</span>
+        </div>
+      </div>
+      <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        <a href="#" class="nav-item active" onclick="showSection('overview'); return false;"><span class="nav-icon">⬛</span> Overview</a>
+        <a href="#" class="nav-item" onclick="showSection('posts'); return false;"><span class="nav-icon">🖼</span> Posts</a>
+        <a href="#" class="nav-item" onclick="showSection('compare'); return false;"><span class="nav-icon">⚖</span> Compare</a>
+        <a href="#" class="nav-item" onclick="showSection('engagement'); return false;"><span class="nav-icon">💡</span> Engagement</a>
+        <a href="#" class="nav-item" onclick="showSection('hashtags'); return false;"><span class="nav-icon">#</span> Hashtags</a>
+        <a href="#" class="nav-item" onclick="showSection('captions'); return false;"><span class="nav-icon">✏</span> Captions</a>
+        <a href="#" class="nav-item" onclick="showSection('audience'); return false;"><span class="nav-icon">👥</span> Audience</a>
+        <a href="#" class="nav-item" onclick="showSection('reach'); return false;"><span class="nav-icon">📡</span> Reach</a>
+        <a href="#" class="nav-item" onclick="showSection('besttime'); return false;"><span class="nav-icon">🕐</span> Best Time</a>
+        <a href="#" class="nav-item" onclick="showSection('export'); return false;"><span class="nav-icon">⬇</span> Export</a>
+      </nav>
+      <div class="p-3 border-t border-white/5">
+        <div class="flex items-center gap-3 p-3 rounded-xl glass mb-2">
+          <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white" id="sidebar-avatar">?</div>
+          <div class="min-w-0">
+            <div class="text-white text-[13px] font-semibold truncate" id="sidebar-name">Loading...</div>
+            <div class="text-neutral-500 text-[11px] truncate" id="sidebar-handle">@—</div>
+          </div>
+        </div>
+        <button class="btn-ghost w-full text-xs" onclick="logout()">Disconnect</button>
+      </div>
+    </aside>
+
+    <!-- Overlay for mobile -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-[220px] min-h-screen flex flex-col" id="main-content" style="margin-left:220px">
+      <!-- Top Bar -->
+      <header class="sticky top-0 z-30 border-b border-white/5 bg-[#080808]/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <!-- Mobile menu btn -->
+          <button class="mobile-header w-8 h-8 rounded-lg glass border border-white/8 flex items-center justify-center text-sm mr-1" onclick="toggleSidebar()">☰</button>
+          <div>
+            <h2 class="font-display font-bold text-white text-lg tracking-tight" id="section-title">Overview</h2>
+            <p class="text-xs text-neutral-600">Last refresh: <span id="last-refresh">—</span></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="hidden sm:flex items-center gap-2 glass border border-white/8 rounded-xl px-3 py-1.5">
+            <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+            <span class="text-xs text-neutral-400" id="connection-status">Connected</span>
+          </div>
+          <button class="btn-ghost text-xs" onclick="loadAllData()">↻ Refresh</button>
+        </div>
+      </header>
+
+      <!-- Loading -->
+      <div id="loading-state" class="flex-1 flex flex-col items-center justify-center gap-4 hidden">
+        <div class="spinner"></div>
+        <p class="text-sm text-neutral-500">Fetching your Instagram data...</p>
+        <p class="text-xs text-neutral-700" id="loading-step">Connecting to API...</p>
+      </div>
+
+      <!-- Error -->
+      <div id="error-state" class="hidden flex-1 flex flex-col items-center justify-center gap-4 p-6">
+        <div class="text-4xl">⚠</div>
+        <p class="text-sm text-neutral-400 text-center" id="error-message">Something went wrong.</p>
+        <button class="btn-primary" onclick="loadAllData()">Try Again</button>
+      </div>
+
+      <!-- Sections -->
+      <div id="sections-wrapper" class="flex-1 p-5 space-y-5">
+
+        <!-- OVERVIEW -->
+        <section id="section-overview" class="section space-y-5">
+          <!-- Stats row -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="stat-card glass border border-white/8 accent-card">
+              <div class="stat-label">Followers</div>
+              <div class="stat-value" id="stat-followers">—</div>
+              <div class="stat-delta" id="delta-followers">Loading...</div>
+            </div>
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Following</div>
+              <div class="stat-value" id="stat-following">—</div>
+            </div>
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Total Posts</div>
+              <div class="stat-value" id="stat-posts">—</div>
+            </div>
+            <div class="stat-card glass border border-white/8 accent-card">
+              <div class="stat-label">Profile Views (28d)</div>
+              <div class="stat-value" id="stat-profile-views">—</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Reach (28d)</div>
+              <div class="stat-value" id="stat-reach">—</div>
+            </div>
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Views (28d)</div>
+              <div class="stat-value" id="stat-impressions">—</div>
+            </div>
+            <div class="stat-card glass border border-white/8 accent-card">
+              <div class="stat-label">Growth Rate (WoW)</div>
+              <div class="stat-value" id="stat-growth-rate">—</div>
+              <div class="stat-delta" id="delta-growth-label">week over week</div>
+            </div>
+          </div>
+          <!-- Engagement rate bar -->
+          <div class="chart-card glass border border-white/8">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3>Account Health Score</h3>
+                <p class="text-xs text-neutral-600 mt-0.5">Composite metric based on engagement, reach & growth</p>
+              </div>
+              <div class="font-display text-3xl font-bold text-white" id="health-score">—</div>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-neutral-500">Engagement</span><span class="text-white" id="health-eng">—</span></div>
+                <div class="progress-bar"><div class="progress-fill" id="pb-eng" style="width:0%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-neutral-500">Reach Rate</span><span class="text-white" id="health-reach">—</span></div>
+                <div class="progress-bar"><div class="progress-fill" id="pb-reach" style="width:0%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1"><span class="text-neutral-500">Growth</span><span class="text-white" id="health-growth">—</span></div>
+                <div class="progress-bar"><div class="progress-fill" id="pb-growth" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+          <!-- Charts row -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="chart-card glass border border-white/8">
+              <div class="flex items-center justify-between mb-3">
+                <h3>Follower Growth</h3>
+                <span class="text-xs text-neutral-600 border border-white/8 rounded-full px-2 py-0.5">Last 30 days</span>
+              </div>
+              <canvas id="chart-followers" height="120"></canvas>
+              <p class="chart-note">📌 Growth tracked locally each visit.</p>
+            </div>
+            <div class="chart-card glass border border-white/8">
+              <h3 class="mb-3">Reach vs Views (28d)</h3>
+              <canvas id="chart-reach" height="120"></canvas>
+            </div>
+          </div>
+          <!-- Top post preview -->
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-4">🏆 Top Performing Posts</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="top-posts-row">
+              <p class="text-sm text-neutral-600 col-span-4">Loading...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- POSTS -->
+        <section id="section-posts" class="section hidden space-y-4">
+          <div class="flex items-center gap-3 flex-wrap">
+            <div class="relative flex-1 min-w-[180px]">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600 text-sm">🔍</span>
+              <input type="text" class="search-input" id="post-search" placeholder="Search posts..." oninput="filterPosts()"/>
+            </div>
+            <div class="flex gap-1.5">
+              <button class="tab-btn active" onclick="filterType('ALL', this)">All</button>
+              <button class="tab-btn" onclick="filterType('IMAGE', this)">Images</button>
+              <button class="tab-btn" onclick="filterType('VIDEO', this)">Video</button>
+              <button class="tab-btn" onclick="filterType('CAROUSEL_ALBUM', this)">Carousels</button>
+            </div>
+            <select class="compare-select" style="width:auto;padding:7px 12px;font-size:12.5px;" onchange="sortPosts(this.value)" id="sort-select">
+              <option value="date">Newest first</option>
+              <option value="likes">Most liked</option>
+              <option value="comments">Most comments</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" id="posts-grid">
+            <p class="text-sm text-neutral-600">Loading posts...</p>
+          </div>
+          <div class="text-center">
+            <button id="load-more-btn" class="btn-ghost hidden" onclick="loadMorePosts()">Load more posts</button>
+          </div>
+        </section>
+
+        <!-- COMPARE -->
+        <section id="section-compare" class="section hidden space-y-5">
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-1">Compare Any Two Posts</h3>
+            <p class="text-xs text-neutral-600 mb-5">Pick two posts to see a side-by-side breakdown.</p>
+            <div class="grid grid-cols-5 gap-4 items-center">
+              <div class="col-span-2">
+                <div class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Post A</div>
+                <select id="compare-a" class="compare-select"><option value="">— Select —</option></select>
+              </div>
+              <div class="col-span-1 text-center font-display font-bold text-neutral-600 text-lg">VS</div>
+              <div class="col-span-2">
+                <div class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Post B</div>
+                <select id="compare-b" class="compare-select"><option value="">— Select —</option></select>
+              </div>
+            </div>
+            <button class="btn-primary mt-5" onclick="runCompare()">Compare →</button>
+          </div>
+          <div id="compare-result" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="chart-card glass border border-white/8" id="ccard-a"></div>
+              <div class="chart-card glass border border-white/8" id="ccard-b"></div>
+            </div>
+            <div class="chart-card glass border border-white/8">
+              <h3 class="mb-4">Side-by-Side Stats</h3>
+              <canvas id="chart-compare" height="120"></canvas>
+            </div>
+            <div class="winner-banner" id="compare-winner"></div>
+          </div>
+        </section>
+
+        <!-- ENGAGEMENT -->
+        <section id="section-engagement" class="section hidden space-y-5">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Avg Likes / Post</div>
+              <div class="stat-value" id="eng-avg-likes">—</div>
+            </div>
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Avg Comments / Post</div>
+              <div class="stat-value" id="eng-avg-comments">—</div>
+            </div>
+            <div class="stat-card glass border border-white/8 accent-card">
+              <div class="stat-label">Engagement Rate</div>
+              <div class="stat-value" id="eng-rate">—</div>
+              <div class="stat-delta" id="eng-rate-label">per post avg</div>
+            </div>
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Best Post Likes</div>
+              <div class="stat-value" id="eng-best-likes">—</div>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="chart-card glass border border-white/8">
+              <h3 class="mb-3">Likes per Post (Recent 20)</h3>
+              <canvas id="chart-eng-likes" height="140"></canvas>
+            </div>
+            <div class="chart-card glass border border-white/8">
+              <h3 class="mb-3">Comments per Post (Recent 20)</h3>
+              <canvas id="chart-eng-comments" height="140"></canvas>
+            </div>
+          </div>
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-3">Likes vs Comments Correlation</h3>
+            <p class="text-xs text-neutral-600 mb-3">Do posts with more likes also get more comments?</p>
+            <canvas id="chart-eng-scatter" height="120"></canvas>
+          </div>
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-1">Media Type Performance</h3>
+            <p class="text-xs text-neutral-600 mb-4">Which format drives the most engagement?</p>
+            <div id="media-type-breakdown" class="space-y-3">Loading...</div>
+          </div>
+        </section>
+
+        <!-- HASHTAGS -->
+        <section id="section-hashtags" class="section hidden space-y-5">
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-1">Most Used Hashtags</h3>
+            <p class="text-xs text-neutral-600 mb-4">Frequency across your last 50 posts.</p>
+            <canvas id="chart-hashtags" height="150"></canvas>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="chart-card glass border border-white/8">
+              <h3 class="mb-4">Hashtags per Post</h3>
+              <div id="hashtag-post-list">Loading...</div>
+            </div>
+            <div class="chart-card glass border border-white/8">
+              <h3 class="mb-4">All Hashtags</h3>
+              <div id="hashtag-cloud" class="flex flex-wrap gap-1">Loading...</div>
+            </div>
+          </div>
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-1">Hashtag → Likes Correlation</h3>
+            <p class="text-xs text-neutral-600 mb-4">Do more hashtags mean more engagement?</p>
+            <canvas id="chart-hashtag-corr" height="120"></canvas>
+          </div>
+        </section>
+
+        <!-- CAPTIONS -->
+        <section id="section-captions" class="section hidden space-y-5">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="stat-card glass border border-white/8 accent-card">
+              <div class="stat-label">Avg Caption Length</div>
+              <div class="stat-value" id="cap-avg-len">—</div>
+              <div class="stat-delta">characters</div>
+            </div>
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Best Caption Length</div>
+              <div class="stat-value" id="cap-best-len">—</div>
+              <div class="stat-delta">chars (most likes)</div>
+            </div>
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Longest Caption</div>
+              <div class="stat-value" id="cap-longest">—</div>
+              <div class="stat-delta">characters</div>
+            </div>
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Posts Without Caption</div>
+              <div class="stat-value" id="cap-nocap">—</div>
+            </div>
+          </div>
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-1">Caption Length vs Likes</h3>
+            <p class="text-xs text-neutral-600 mb-4">Each dot = one post. Find your sweet spot.</p>
+            <canvas id="chart-caption-scatter" height="140"></canvas>
+          </div>
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-4">Avg Likes by Caption Length Bucket</h3>
+            <canvas id="chart-caption-buckets" height="100"></canvas>
+          </div>
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-4">Emoji Usage vs Engagement</h3>
+            <div id="emoji-analysis" class="space-y-3">Loading...</div>
+          </div>
+        </section>
+
+        <!-- AUDIENCE -->
+        <section id="section-audience" class="section hidden space-y-5">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="chart-card glass border border-white/8">
+              <h3 class="mb-4">Gender Distribution</h3>
+              <canvas id="chart-gender" height="160"></canvas>
+            </div>
+            <div class="chart-card glass border border-white/8">
+              <h3 class="mb-4">Age Range</h3>
+              <canvas id="chart-age" height="160"></canvas>
+            </div>
+          </div>
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-1">🕐 Follower Activity Heatmap</h3>
+            <p class="text-xs text-neutral-600 mb-4">When your audience is online. Brighter = more active.</p>
+            <div id="heatmap-container" class="overflow-x-auto">Loading...</div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="chart-card glass border border-white/8">
+              <h3 class="mb-4">Top Countries</h3>
+              <div id="audience-countries">Loading...</div>
+            </div>
+            <div class="chart-card glass border border-white/8">
+              <h3 class="mb-4">Top Cities</h3>
+              <div id="audience-cities">Loading...</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- REACH -->
+        <section id="section-reach" class="section hidden space-y-5">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="stat-card glass border border-white/8 accent-card">
+              <div class="stat-label">Accounts Reached</div>
+              <div class="stat-value" id="reach-accounts">—</div>
+            </div>
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Total Views</div>
+              <div class="stat-value" id="reach-impressions">—</div>
+            </div>
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Website Clicks</div>
+              <div class="stat-value" id="reach-website">—</div>
+            </div>
+            <div class="stat-card glass border border-white/8">
+              <div class="stat-label">Accounts Engaged</div>
+              <div class="stat-value" id="reach-email">—</div>
+            </div>
+          </div>
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-4">Daily Views (Last 30 Days)</h3>
+            <canvas id="chart-impressions-daily" height="120"></canvas>
+          </div>
+        </section>
+
+        <!-- BEST TIME -->
+        <section id="section-besttime" class="section hidden space-y-5">
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-1">🕐 Optimal Posting Times</h3>
+            <p class="text-xs text-neutral-600 mb-5">Based on your follower activity patterns. Post during bright windows.</p>
+            <div id="best-time-heatmap" class="overflow-x-auto">Loading...</div>
+          </div>
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-4">Best Days to Post</h3>
+            <canvas id="chart-best-day" height="100"></canvas>
+          </div>
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-1">📅 Posting Consistency</h3>
+            <p class="text-xs text-neutral-600 mb-4">How often you post by day of week.</p>
+            <canvas id="chart-post-day" height="100"></canvas>
+          </div>
+          <div class="grid md:grid-cols-3 gap-4" id="time-recs">
+            <!-- filled by JS -->
+          </div>
+        </section>
+
+        <!-- EXPORT -->
+        <section id="section-export" class="section hidden space-y-5">
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-1">Export Your Data</h3>
+            <p class="text-xs text-neutral-600 mb-6">Download your Instagram analytics as a structured JSON or CSV report.</p>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="glass border border-white/8 rounded-2xl p-5 space-y-3">
+                <div class="text-2xl">📦</div>
+                <div class="font-display font-semibold text-white">JSON Export</div>
+                <p class="text-xs text-neutral-500">Full structured data including posts, insights, follower history, and computed metrics.</p>
+                <button class="btn-primary text-sm" onclick="exportJSON()">Download JSON</button>
+              </div>
+              <div class="glass border border-white/8 rounded-2xl p-5 space-y-3">
+                <div class="text-2xl">📊</div>
+                <div class="font-display font-semibold text-white">CSV Export</div>
+                <p class="text-xs text-neutral-500">Posts table with likes, comments, captions, dates, and media type — ready for Excel.</p>
+                <button class="btn-primary text-sm" onclick="exportCSV()">Download CSV</button>
+              </div>
+            </div>
+          </div>
+          <div class="chart-card glass border border-white/8">
+            <h3 class="mb-4">Follower History Log</h3>
+            <div id="follower-history-table" class="overflow-x-auto">Loading...</div>
+          </div>
+        </section>
+
+      </div><!-- /sections-wrapper -->
+    </main>
+  </div>
+
+  <!-- Post Modal -->
+  <div id="post-modal" class="modal-overlay hidden" onclick="closeModal(event)">
+    <div class="modal-card" id="modal-content"></div>
+  </div>
+
+</div><!-- /z-10 wrapper -->
+
+<script src="app.js"></script>
+</body>
+</html>
