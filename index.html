@@ -1,823 +1,639 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>IG Studio — Analytics Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    :root {
-      --glass-bg: rgba(255,255,255,0.04);
-      --glass-border: rgba(255,255,255,0.08);
-      --glass-hover: rgba(255,255,255,0.07);
-    }
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #080808;
-      color: #e8e8e8;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-    .font-display { font-family: 'Space Grotesk', sans-serif; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Sorry... 🥺❤️</title>
 
-    /* Background grain + grid */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.03) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.02) 0%, transparent 50%),
-        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-    /* Glass card */
-    .glass {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-    }
-    .glass-hover:hover {
-      background: var(--glass-hover);
-      border-color: rgba(255,255,255,0.14);
-      transition: all 0.2s ease;
-    }
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
 
-    /* Sidebar */
-    .sidebar {
-      background: rgba(10,10,10,0.95);
-      border-right: 1px solid rgba(255,255,255,0.06);
-      backdrop-filter: blur(40px);
-    }
+<style>
+  /* ---------- Base ---------- */
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Quicksand', sans-serif;
+    background: linear-gradient(160deg, #FFF0F5 0%, #F3E8FF 45%, #FFF9F0 100%);
+    background-attachment: fixed;
+    overflow-x: hidden;
+    cursor: none; /* custom heart cursor */
+    transition: background 1.2s ease;
+  }
+  body.forgiven-bg {
+    background: linear-gradient(160deg, #FFD6E8 0%, #FFB6D9 40%, #FFE3F1 100%);
+    background-attachment: fixed;
+  }
+  .font-pacifico { font-family: 'Pacifico', cursive; }
+  .font-poppins { font-family: 'Poppins', sans-serif; }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+  /* ---------- Custom heart cursor trail ---------- */
+  .cursor-heart {
+    position: fixed;
+    pointer-events: none;
+    font-size: 16px;
+    z-index: 9999;
+    animation: cursorFade 0.9s ease-out forwards;
+  }
+  @keyframes cursorFade {
+    0% { opacity: 1; transform: scale(1) translateY(0); }
+    100% { opacity: 0; transform: scale(0.3) translateY(-30px); }
+  }
 
-    /* Nav item */
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 13.5px;
-      font-weight: 500;
-      color: #666;
-      cursor: pointer;
-      transition: all 0.18s ease;
-      border: 1px solid transparent;
-      text-decoration: none;
-    }
-    .nav-item:hover { color: #ccc; background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); }
-    .nav-item.active { color: #fff; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
-    .nav-item .nav-icon { width: 16px; text-align: center; font-size: 14px; }
+  /* ---------- Floating hearts background ---------- */
+  .floating-heart {
+    position: fixed;
+    bottom: -10%;
+    z-index: 1;
+    pointer-events: none;
+    animation-name: floatUp;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    opacity: 0.85;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.9; }
+    50% { transform: translateY(-55vh) translateX(15px) rotate(15deg); }
+    90% { opacity: 0.7; }
+    100% { transform: translateY(-110vh) translateX(-15px) rotate(-10deg); opacity: 0; }
+  }
 
-    /* Stat cards */
-    .stat-card {
-      padding: 20px;
-      border-radius: 16px;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-    .stat-card.accent-card::after {
-      content: '';
-      position: absolute;
-      top: -30px; right: -30px;
-      width: 100px; height: 100px;
-      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
-      pointer-events: none;
-    }
+  /* ---------- Sparkles ---------- */
+  .sparkle {
+    position: fixed;
+    z-index: 2;
+    pointer-events: none;
+    animation: twinkle 2.5s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.15; transform: scale(0.7) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1.3) rotate(90deg); }
+  }
 
-    /* Stat value */
-    .stat-value {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 32px;
-      font-weight: 700;
-      line-height: 1.1;
-      letter-spacing: -0.5px;
-      color: #fff;
-    }
-    .stat-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #444;
-      margin-bottom: 8px;
-    }
-    .stat-delta { font-size: 11.5px; margin-top: 6px; color: #555; }
-    .stat-delta.up { color: #6ee7b7; }
-    .stat-delta.down { color: #f87171; }
+  /* ---------- Clouds ---------- */
+  .cloud {
+    position: fixed;
+    z-index: 0;
+    opacity: 0.55;
+    animation: driftCloud linear infinite;
+    pointer-events: none;
+  }
+  @keyframes driftCloud {
+    0% { transform: translateX(-20vw); }
+    100% { transform: translateX(120vw); }
+  }
 
-    /* Chart card */
-    .chart-card {
-      padding: 24px;
-      border-radius: 20px;
-    }
-    .chart-card h3 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      color: #ddd;
-      margin-bottom: 4px;
-    }
-    .chart-note { font-size: 11.5px; color: #444; margin-top: 10px; }
+  /* ---------- Bubbles ---------- */
+  .bubble {
+    position: fixed;
+    bottom: -5%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,182,217,0.15));
+    z-index: 1;
+    pointer-events: none;
+    animation: bubbleUp linear infinite;
+  }
+  @keyframes bubbleUp {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    10% { opacity: 0.7; }
+    100% { transform: translateY(-105vh) translateX(20px); opacity: 0; }
+  }
 
-    /* Posts grid */
-    .post-card {
-      border-radius: 16px;
-      overflow: hidden;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      cursor: pointer;
-    }
-    .post-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
-    .post-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
-    .post-thumb-placeholder {
-      width: 100%; aspect-ratio: 1;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 32px;
-      background: rgba(255,255,255,0.03);
-    }
+  /* ---------- Fade in up ---------- */
+  .fade-in-up {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: fadeInUp 0.9s ease forwards;
+  }
+  @keyframes fadeInUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
 
-    /* Spinner */
-    .spinner {
-      width: 36px; height: 36px;
-      border: 2px solid rgba(255,255,255,0.08);
-      border-top-color: rgba(255,255,255,0.6);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+  /* ---------- Bounce float for gifs ---------- */
+  .float-slow { animation: floatSlow 4s ease-in-out infinite; }
+  .float-slow2 { animation: floatSlow 5s ease-in-out infinite 0.5s; }
+  .float-bounce { animation: bounceCute 2.4s ease-in-out infinite; }
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-14px) rotate(2deg); }
+  }
+  @keyframes bounceCute {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.03); }
+  }
 
-    /* Tag cloud */
-    .tag-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 4px 10px; border-radius: 999px;
-      font-size: 12px; font-weight: 500;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #888; cursor: default;
-      transition: all 0.15s;
-      margin: 3px;
-    }
-    .tag-pill:hover { background: rgba(255,255,255,0.09); color: #ccc; }
-    .tag-pill.big { font-size: 13.5px; padding: 5px 14px; color: #ddd; background: rgba(255,255,255,0.08); }
-    .tag-pill strong { color: #fff; }
+  /* ---------- Heartbeat ---------- */
+  .heartbeat { animation: heartbeat 1.3s ease-in-out infinite; }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.15); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.1); }
+    60% { transform: scale(1); }
+  }
 
-    /* List items */
-    .list-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .list-item:last-child { border-bottom: none; }
-    .list-item-label { font-size: 13px; color: #aaa; flex: 1; }
-    .list-item-bar-wrap { flex: 2; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; }
-    .list-item-bar { height: 100%; background: rgba(255,255,255,0.4); border-radius: 2px; transition: width 0.6s ease; }
-    .list-item-value { font-size: 12px; font-weight: 600; color: #ddd; min-width: 40px; text-align: right; }
+  /* ---------- Glow ---------- */
+  .glow-border {
+    box-shadow: 0 0 20px rgba(255,182,217,0.6), 0 0 40px rgba(216,180,254,0.4);
+  }
+  .glow-btn {
+    box-shadow: 0 0 18px rgba(255,120,180,0.55), 0 8px 20px rgba(255,120,180,0.35);
+  }
+  .glow-btn:active { transform: scale(0.95); }
 
-    /* Compare */
-    .compare-select {
-      width: 100%; padding: 10px 14px; border-radius: 10px;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      color: #ccc; font-size: 13px; font-family: 'Inter', sans-serif;
-      appearance: none; cursor: pointer;
-    }
-    .compare-select:focus { outline: none; border-color: rgba(255,255,255,0.2); }
-    option { background: #111; }
+  /* ---------- Glass card ---------- */
+  .glass-card {
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.7);
+  }
 
-    /* Heatmap */
-    .heatmap-table { border-collapse: collapse; width: 100%; font-size: 10px; }
-    .heatmap-table th { color: #555; font-weight: 500; padding: 4px 2px; text-align: center; font-size: 9.5px; }
-    .heatmap-cell {
-      width: 28px; height: 24px; border-radius: 4px;
-      text-align: center; line-height: 24px; color: rgba(255,255,255,0.5);
-      cursor: default; transition: transform 0.1s;
-    }
-    .heatmap-cell:hover { transform: scale(1.3); z-index: 10; position: relative; }
+  /* ---------- Typing text ---------- */
+  .typing-text {
+    overflow: hidden;
+    white-space: normal;
+    border-right: 2px solid #f472b6;
+    animation: blinkCaret 0.75s step-end infinite;
+  }
+  @keyframes blinkCaret {
+    0%, 100% { border-color: transparent; }
+    50% { border-color: #f472b6; }
+  }
 
-    /* Buttons */
-    .btn-primary {
-      background: #fff; color: #000;
-      padding: 10px 20px; border-radius: 10px;
-      font-size: 13.5px; font-weight: 600;
-      border: none; cursor: pointer; transition: all 0.2s;
-    }
-    .btn-primary:hover { background: #e0e0e0; transform: translateY(-1px); }
-    .btn-ghost {
-      background: transparent; color: #888;
-      padding: 8px 16px; border-radius: 8px;
-      font-size: 13px; font-weight: 500;
-      border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: all 0.2s;
-    }
-    .btn-ghost:hover { color: #ccc; border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); }
+  /* ---------- Message lines ---------- */
+  .msg-line {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: lineIn 0.7s ease forwards;
+  }
+  @keyframes lineIn { to { opacity: 1; transform: translateY(0); } }
 
-    /* Score badge */
-    .score-badge {
-      display: inline-flex; align-items: center;
-      padding: 3px 8px; border-radius: 6px;
-      font-size: 11px; font-weight: 700;
-    }
-    .score-a { background: rgba(110,231,183,0.12); color: #6ee7b7; }
-    .score-b { background: rgba(248,113,113,0.12); color: #f87171; }
-    .score-c { background: rgba(251,191,36,0.12); color: #fbbf24; }
+  /* ---------- Teddy float ---------- */
+  .teddy-float {
+    position: fixed;
+    z-index: 1;
+    pointer-events: none;
+    animation: teddyDrift 6s ease-in-out infinite;
+    opacity: 0.9;
+  }
+  @keyframes teddyDrift {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(-20px) rotate(4deg); }
+  }
 
-    /* Input */
-    .form-input {
-      width: 100%; padding: 12px 16px;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px; color: #e0e0e0; font-size: 14px; font-family: 'Inter', sans-serif;
-    }
-    .form-input:focus { outline: none; border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.07); }
-    .form-input::placeholder { color: #333; }
+  /* ---------- Star twinkle ---------- */
+  .star {
+    position: fixed;
+    z-index: 1;
+    pointer-events: none;
+    animation: starTwinkle 2s ease-in-out infinite;
+  }
+  @keyframes starTwinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
 
-    /* Tabs */
-    .tab-btn {
-      padding: 7px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 500;
-      cursor: pointer; border: 1px solid transparent; transition: all 0.15s; color: #555;
-      background: transparent;
-    }
-    .tab-btn.active { color: #fff; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); }
-    .tab-btn:hover:not(.active) { color: #999; background: rgba(255,255,255,0.03); }
+  /* ---------- Confetti ---------- */
+  .confetti-piece {
+    position: fixed;
+    top: -10%;
+    z-index: 60;
+    pointer-events: none;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0.2; }
+  }
 
-    /* Winner banner */
-    .winner-banner {
-      padding: 16px 24px; border-radius: 14px;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-      text-align: center; font-size: 14px; font-weight: 600; color: #ddd;
-      margin-top: 20px;
-    }
+  /* ---------- Exploding hearts ---------- */
+  .explode-heart {
+    position: fixed;
+    z-index: 60;
+    pointer-events: none;
+    animation: explodeOut 1.4s ease-out forwards;
+  }
+  @keyframes explodeOut {
+    0% { transform: translate(0,0) scale(0.5); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(1.4); opacity: 0; }
+  }
 
-    /* Engagement ring */
-    .eng-ring-wrap {
-      display: flex; align-items: center; justify-content: center;
-      position: relative; width: 120px; height: 120px;
-    }
-    .eng-center {
-      position: absolute; text-align: center;
-    }
+  /* ---------- Popup pop ---------- */
+  .popup-pop {
+    animation: popIn 0.55s cubic-bezier(.34,1.56,.64,1) forwards;
+  }
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.4) translateY(30px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
 
-    /* Pulse dot */
-    .pulse-dot {
-      width: 8px; height: 8px; border-radius: 50%; background: #6ee7b7;
-      position: relative;
-    }
-    .pulse-dot::after {
-      content: ''; position: absolute; inset: -3px;
-      border-radius: 50%; background: rgba(110,231,183,0.3);
-      animation: pulse-ring 1.5s ease-out infinite;
-    }
-    @keyframes pulse-ring { to { transform: scale(2.5); opacity: 0; } }
+  /* ---------- Shake ---------- */
+  .shake-run {
+    animation: shakeRun 0.4s ease;
+  }
+  @keyframes shakeRun {
+    0%, 100% { transform: translate(0,0) rotate(0deg); }
+    20% { transform: translate(-4px, 2px) rotate(-6deg); }
+    40% { transform: translate(4px, -2px) rotate(6deg); }
+    60% { transform: translate(-3px, 1px) rotate(-4deg); }
+    80% { transform: translate(3px, -1px) rotate(4deg); }
+  }
 
-    /* Section transitions */
-    .section { animation: fadeUp 0.3s ease; }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  #thinkBtn {
+    transition: top 0.35s ease, left 0.35s ease, transform 0.3s ease, font-size 0.3s ease, padding 0.3s ease;
+  }
 
-    /* Mobile sidebar */
-    @media (max-width: 768px) {
-      .sidebar { position: fixed; left: -260px; top: 0; bottom: 0; width: 260px; z-index: 100; transition: left 0.3s ease; }
-      .sidebar.open { left: 0; }
-      .main-wrap { margin-left: 0 !important; }
-      .mobile-header { display: flex !important; }
-    }
-    .mobile-header { display: none; }
-    .hidden { display: none !important; }
-
-    /* Progress bar */
-    .progress-bar {
-      height: 4px; border-radius: 2px; background: rgba(255,255,255,0.05);
-      overflow: hidden; margin-top: 8px;
-    }
-    .progress-fill {
-      height: 100%; border-radius: 2px; background: rgba(255,255,255,0.35);
-      transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
-    }
-
-    /* Tooltip */
-    [data-tip] { position: relative; }
-    [data-tip]:hover::after {
-      content: attr(data-tip);
-      position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
-      background: rgba(20,20,20,0.95); color: #ddd;
-      padding: 5px 10px; border-radius: 7px; font-size: 11px; white-space: nowrap;
-      border: 1px solid rgba(255,255,255,0.08); z-index: 100;
-      pointer-events: none;
-    }
-
-    /* Engagement rate colors */
-    .er-great { color: #6ee7b7; }
-    .er-good { color: #fbbf24; }
-    .er-low { color: #f87171; }
-
-    /* Post modal */
-    .modal-overlay {
-      position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
-    }
-    .modal-card {
-      background: #111; border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 24px; max-width: 600px; width: 100%; max-height: 90vh;
-      overflow-y: auto; animation: scaleIn 0.2s ease;
-    }
-    @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-    /* Search input */
-    .search-input {
-      width: 100%; padding: 9px 14px 9px 36px;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 10px; color: #ccc; font-size: 13px; font-family: 'Inter', sans-serif;
-    }
-    .search-input:focus { outline: none; border-color: rgba(255,255,255,0.15); }
-    .search-input::placeholder { color: #333; }
-
-    /* Toast */
-    .toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      background: rgba(20,20,20,0.98); border: 1px solid rgba(255,255,255,0.12);
-      color: #ddd; padding: 12px 20px; border-radius: 12px; font-size: 13.5px;
-      z-index: 300; animation: toastIn 0.3s ease;
-      backdrop-filter: blur(20px); white-space: nowrap;
-    }
-    @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-  </style>
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #f9a8d4; border-radius: 10px; }
+</style>
 </head>
-<body>
-<div class="relative z-10">
 
-  <!-- SETUP SCREEN -->
-  <div id="setup-screen" class="min-h-screen flex items-center justify-center p-4">
-    <div class="glass border border-white/8 rounded-3xl p-10 max-w-md w-full text-center">
-      <div class="w-14 h-14 rounded-2xl glass border border-white/10 flex items-center justify-center text-2xl mx-auto mb-6">📊</div>
-      <h1 class="font-display text-3xl font-bold text-white mb-2 tracking-tight">IG Studio</h1>
-      <p class="text-sm text-neutral-500 mb-8">Connect your Instagram Business account to unlock full analytics.</p>
-      <div class="space-y-4 text-left">
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">Instagram User ID</label>
-          <input type="text" id="input-user-id" class="form-input" placeholder="e.g. 17841400000000000"/>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">Access Token</label>
-          <input type="password" id="input-token" class="form-input" placeholder="Long-lived access token"/>
-        </div>
-      </div>
-      <button class="btn-primary w-full mt-6" onclick="saveCredentials()">Connect Account →</button>
-      <div class="flex items-center gap-2 mt-5 justify-center">
-        <div class="pulse-dot"></div>
-        <p class="text-xs text-neutral-600">Credentials stored locally — never sent to any server</p>
-      </div>
+<body class="relative min-h-screen text-[#5b3a52] font-poppins">
+
+<!-- ============ AMBIENT BACKGROUND LAYERS (injected further via JS too) ============ -->
+<div id="bgLayer" class="fixed inset-0 -z-10 overflow-hidden"></div>
+
+<!-- ============ YOUTUBE SHORTS EMBED (replaces background music) ============ -->
+<button id="musicBtn" class="fixed top-4 right-4 z-50 bg-white/70 backdrop-blur-md rounded-full w-12 h-12 flex items-center justify-center shadow-lg glow-border active:scale-90 transition">
+  <span id="musicIcon" class="text-xl">🔇</span>
+</button>
+
+<div style="position: relative;display:hidden; width: 100%; max-width: 405px; aspect-ratio: 9/16; margin: 0 auto;">
+  <iframe
+    id="shortsPlayer"
+    src="https://www.youtube.com/embed/Q2NMgQKpl8Y?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=Q2NMgQKpl8Y&controls=0&playsinline=1&modestbranding=1&rel=0"
+    title="YouTube Shorts video player"
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px; border: none;"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen>
+  </iframe>
+</div>
+
+<!-- ============ MAIN CONTAINER (mobile-first, capped width) ============ -->
+<main class="relative z-10 max-w-[420px] mx-auto px-5 pb-24">
+
+  <!-- ================= HERO SECTION ================= -->
+  <section class="min-h-screen flex flex-col items-center justify-center text-center pt-10">
+    <div class="fade-in-up" style="animation-delay:.1s;">
+      <p class="text-5xl mb-2 heartbeat">🥺❤️</p>
+      <h1 class="font-pacifico text-5xl leading-tight bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-fuchsia-400 to-purple-400 drop-shadow-sm">
+        Sorry...
+      </h1>
     </div>
+
+    <p id="typedLine1" class="typing-text font-poppins font-medium text-[#7a4a6b] text-lg mt-6 max-w-[320px] mx-auto"></p>
+
+    <p class="fade-in-up font-poppins text-sm text-[#9a6f8e] mt-5 max-w-[300px] leading-relaxed" style="animation-delay: 2.4s;">
+ha hum mistakes krte hai, sundar nhi hai, ache nhi hai, but hum krte hai humkoo malum hai hum khud iske baare me sochte hai i have to change for her🥺💗
+    </p>
+
+    <!-- floating cat gif -->
+    <img src="https://media.tenor.com/6LsqdaZP9EwAAAAm/cat-with-flowers.webp" alt="cute cat" class="float-slow w-28 h-28 rounded-3xl object-cover mt-8 shadow-xl border-4 border-white/80 glow-border" />
+
+    <div class="mt-10 animate-bounce text-2xl text-pink-400">⌄</div>
+  </section>
+
+  <!-- ================= CAT GIF GALLERY ================= -->
+  <section class="py-10">
+    <h2 class="font-pacifico text-3xl text-center text-pink-500 mb-6 fade-in-up">for you, meri jaan 🐾</h2>
+    <div class="grid grid-cols-2 gap-4">
+      <img src="https://media.tenor.com/ZsHIM2wZjmQAAAAM/drooling-kitty-drooling.gif" class="float-bounce rounded-2xl shadow-lg border-2 border-white object-cover w-full h-60" alt="cat" />
+      <img src="https://media.tenor.com/bmxESZp93QYAAAAM/cute-staring-cat.gif" class="float-slow2 rounded-2xl shadow-lg border-2 border-white object-cover w-full h-60" alt="cat love" style="margin-top: 1.5rem;" />
+      <img src="https://media.tenor.com/d-HSksPE2dMAAAAm/cat-dance-happy-dance-cat.webp" class="float-slow rounded-2xl shadow-lg border-2 border-white object-cover w-full h-32" alt="cat kiss" />
+      <img src="https://media.tenor.com/kIKCUtlep0cAAAAm/hulkenberg.webp" class="float-bounce rounded-2xl shadow-lg border-2 border-white object-cover w-full h-32" alt="cute cat" style="margin-top: 1.5rem;" />
+    </div>
+  </section>
+
+  <!-- ================= MESSAGE CARD ================= -->
+  <section class="py-8">
+    <div class="glass-card rounded-[2rem] p-7 shadow-2xl glow-border">
+      <p class="text-center text-2xl mb-4">🌸</p>
+      <p id="msgLine1" class="msg-line font-poppins text-[#6b3f5f] text-[15px] leading-relaxed mb-3 text-center">ha hum nhi hai sundar but i am trying hard to make myself good looking(aur bhi bahut changes) .</p>
+      <p id="msgLine2" class="msg-line font-poppins text-[#6b3f5f] text-[15px] leading-relaxed mb-3 text-center">Lekin ek baat sach hai...</p>
+      <p id="msgLine3" class="msg-line font-poppins font-semibold text-pink-600 text-[16px] leading-relaxed mb-3 text-center">aapki smile besst hai mere liye </p>
+      <p id="msgLine4" class="msg-line font-poppins text-[#6b3f5f] text-[15px] leading-relaxed mb-3 text-center">kl dekh ke bahut acha lga isliye apne form me nhi the acha lg rha tha</p>
+      <p id="msgLine5" class="msg-line font-poppins font-bold text-fuchsia-600 text-[17px] leading-relaxed text-center">genuinely sorry. 🥹💗</p>
+    </div>
+  </section>
+
+  <!-- ================= BUTTONS SECTION ================= -->
+  <section class="py-10 flex flex-col items-center gap-5 relative min-h-[220px]">
+    <button id="forgiveBtn"
+      class="glow-btn font-poppins font-bold text-white text-lg bg-gradient-to-r from-pink-500 to-fuchsia-500 px-8 py-4 rounded-full active:scale-95 transition transform hover:scale-105">
+      ❤️ Maaf Kar Diyee
+    </button>
+
+    <button id="thinkBtn"
+      class="font-poppins font-semibold text-pink-500 bg-white/80 border-2 border-pink-300 px-6 py-3 rounded-full shadow-md relative">
+      😤 ite asani se nhi
+    </button>
+  </section>
+
+  <footer class="text-center text-xs text-[#a97ea0] pb-6 fade-in-up">
+    made with 🐱 + 💗 just for you
+  </footer>
+</main>
+
+<!-- ================= SUCCESS POPUP (hidden by default) ================= -->
+<div id="popupOverlay" class="fixed inset-0 z-[70] hidden items-center justify-center bg-black/30 backdrop-blur-sm px-6">
+  <div class="popup-pop glass-card rounded-[2rem] p-8 text-center max-w-[320px] shadow-2xl glow-border bg-white/80">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSS2k1ub5xmseEthO1nSG3kTfvXkSfAz5y2oK10tGzlZw&s" class="w-24 h-24 rounded-2xl mx-auto mb-4 object-cover heartbeat" alt="celebration cat" />
+    <p class="font-pacifico text-3xl text-pink-500 mb-2">whuwu!! ❤️</p>
+    <p class="font-poppins font-semibold text-[#6b3f5f] text-lg">Thank Youuu 🥹🐱</p>
+    <button id="closePopup" class="mt-6 font-poppins font-semibold text-white bg-gradient-to-r from-pink-500 to-fuchsia-500 px-6 py-2 rounded-full shadow-md active:scale-95 transition">
+      close ✨
+    </button>
   </div>
+</div>
 
-  <!-- DASHBOARD -->
-  <div id="dashboard" class="hidden flex min-h-screen">
+<!-- YouTube IFrame API (needed to mute/unmute + play/pause the Shorts embed) -->
+<script src="https://www.youtube.com/iframe_api"></script>
 
-    <!-- Sidebar -->
-    <aside class="sidebar fixed left-0 top-0 bottom-0 w-[220px] z-50 flex flex-col" id="sidebar">
-      <div class="p-5 border-b border-white/5">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-white/8 flex items-center justify-center text-sm border border-white/10">📊</div>
-          <span class="font-display font-bold text-white text-[15px] tracking-tight">IG Studio</span>
-        </div>
-      </div>
-      <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto">
-        <a href="#" class="nav-item active" onclick="showSection('overview'); return false;"><span class="nav-icon">⬛</span> Overview</a>
-        <a href="#" class="nav-item" onclick="showSection('posts'); return false;"><span class="nav-icon">🖼</span> Posts</a>
-        <a href="#" class="nav-item" onclick="showSection('compare'); return false;"><span class="nav-icon">⚖</span> Compare</a>
-        <a href="#" class="nav-item" onclick="showSection('engagement'); return false;"><span class="nav-icon">💡</span> Engagement</a>
-        <a href="#" class="nav-item" onclick="showSection('hashtags'); return false;"><span class="nav-icon">#</span> Hashtags</a>
-        <a href="#" class="nav-item" onclick="showSection('captions'); return false;"><span class="nav-icon">✏</span> Captions</a>
-        <a href="#" class="nav-item" onclick="showSection('audience'); return false;"><span class="nav-icon">👥</span> Audience</a>
-        <a href="#" class="nav-item" onclick="showSection('reach'); return false;"><span class="nav-icon">📡</span> Reach</a>
-        <a href="#" class="nav-item" onclick="showSection('besttime'); return false;"><span class="nav-icon">🕐</span> Best Time</a>
-        <a href="#" class="nav-item" onclick="showSection('export'); return false;"><span class="nav-icon">⬇</span> Export</a>
-      </nav>
-      <div class="p-3 border-t border-white/5">
-        <div class="flex items-center gap-3 p-3 rounded-xl glass mb-2">
-          <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white" id="sidebar-avatar">?</div>
-          <div class="min-w-0">
-            <div class="text-white text-[13px] font-semibold truncate" id="sidebar-name">Loading...</div>
-            <div class="text-neutral-500 text-[11px] truncate" id="sidebar-handle">@—</div>
-          </div>
-        </div>
-        <button class="btn-ghost w-full text-xs" onclick="logout()">Disconnect</button>
-      </div>
-    </aside>
+<script>
+/* =========================================================
+   CUSTOM HEART CURSOR TRAIL
+   ========================================================= */
+document.addEventListener('mousemove', (e) => {
+  if (Math.random() > 0.75) { // throttle spawn rate
+    const heart = document.createElement('div');
+    heart.className = 'cursor-heart';
+    heart.textContent = ['💗','✨','💖','🌸'][Math.floor(Math.random()*4)];
+    heart.style.left = e.clientX + 'px';
+    heart.style.top = e.clientY + 'px';
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 900);
+  }
+});
 
-    <!-- Overlay for mobile -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
+/* =========================================================
+   BACKGROUND AMBIENCE: floating hearts, sparkles, clouds,
+   bubbles, teddy bears, stars — generated dynamically
+   ========================================================= */
+const bgLayer = document.getElementById('bgLayer');
 
-    <!-- Main Content -->
-    <main class="flex-1 ml-[220px] min-h-screen flex flex-col" id="main-content" style="margin-left:220px">
-      <!-- Top Bar -->
-      <header class="sticky top-0 z-30 border-b border-white/5 bg-[#080808]/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <!-- Mobile menu btn -->
-          <button class="mobile-header w-8 h-8 rounded-lg glass border border-white/8 flex items-center justify-center text-sm mr-1" onclick="toggleSidebar()">☰</button>
-          <div>
-            <h2 class="font-display font-bold text-white text-lg tracking-tight" id="section-title">Overview</h2>
-            <p class="text-xs text-neutral-600">Last refresh: <span id="last-refresh">—</span></p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="hidden sm:flex items-center gap-2 glass border border-white/8 rounded-xl px-3 py-1.5">
-            <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-            <span class="text-xs text-neutral-400" id="connection-status">Connected</span>
-          </div>
-          <button class="btn-ghost text-xs" onclick="loadAllData()">↻ Refresh</button>
-        </div>
-      </header>
+function rand(min, max) { return Math.random() * (max - min) + min; }
 
-      <!-- Loading -->
-      <div id="loading-state" class="flex-1 flex flex-col items-center justify-center gap-4 hidden">
-        <div class="spinner"></div>
-        <p class="text-sm text-neutral-500">Fetching your Instagram data...</p>
-        <p class="text-xs text-neutral-700" id="loading-step">Connecting to API...</p>
-      </div>
+// Floating hearts
+const heartEmojis = ['💗','💖','❤️','💕','🩷'];
+function spawnHeart() {
+  const h = document.createElement('div');
+  h.className = 'floating-heart';
+  h.textContent = heartEmojis[Math.floor(Math.random()*heartEmojis.length)];
+  h.style.left = rand(2, 92) + 'vw';
+  h.style.fontSize = rand(14, 30) + 'px';
+  h.style.animationDuration = rand(7, 13) + 's';
+  bgLayer.appendChild(h);
+  setTimeout(() => h.remove(), 13000);
+}
+setInterval(spawnHeart, 700);
 
-      <!-- Error -->
-      <div id="error-state" class="hidden flex-1 flex flex-col items-center justify-center gap-4 p-6">
-        <div class="text-4xl">⚠</div>
-        <p class="text-sm text-neutral-400 text-center" id="error-message">Something went wrong.</p>
-        <button class="btn-primary" onclick="loadAllData()">Try Again</button>
-      </div>
+// Sparkles
+function spawnSparkle() {
+  const s = document.createElement('div');
+  s.className = 'sparkle';
+  s.textContent = '✨';
+  s.style.left = rand(0, 96) + 'vw';
+  s.style.top = rand(0, 96) + 'vh';
+  s.style.fontSize = rand(10, 18) + 'px';
+  s.style.animationDelay = rand(0, 2) + 's';
+  bgLayer.appendChild(s);
+  setTimeout(() => s.remove(), 3000);
+}
+setInterval(spawnSparkle, 500);
 
-      <!-- Sections -->
-      <div id="sections-wrapper" class="flex-1 p-5 space-y-5">
+// Twinkling stars
+function spawnStar() {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.textContent = '⭐';
+  s.style.left = rand(0, 95) + 'vw';
+  s.style.top = rand(0, 60) + 'vh';
+  s.style.fontSize = rand(8, 14) + 'px';
+  bgLayer.appendChild(s);
+  setTimeout(() => s.remove(), 4000);
+}
+setInterval(spawnStar, 900);
 
-        <!-- OVERVIEW -->
-        <section id="section-overview" class="section space-y-5">
-          <!-- Stats row -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="stat-card glass border border-white/8 accent-card">
-              <div class="stat-label">Followers</div>
-              <div class="stat-value" id="stat-followers">—</div>
-              <div class="stat-delta" id="delta-followers">Loading...</div>
-            </div>
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Following</div>
-              <div class="stat-value" id="stat-following">—</div>
-            </div>
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Total Posts</div>
-              <div class="stat-value" id="stat-posts">—</div>
-            </div>
-            <div class="stat-card glass border border-white/8 accent-card">
-              <div class="stat-label">Profile Views (28d)</div>
-              <div class="stat-value" id="stat-profile-views">—</div>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Reach (28d)</div>
-              <div class="stat-value" id="stat-reach">—</div>
-            </div>
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Views (28d)</div>
-              <div class="stat-value" id="stat-impressions">—</div>
-            </div>
-            <div class="stat-card glass border border-white/8 accent-card">
-              <div class="stat-label">Growth Rate (WoW)</div>
-              <div class="stat-value" id="stat-growth-rate">—</div>
-              <div class="stat-delta" id="delta-growth-label">week over week</div>
-            </div>
-          </div>
-          <!-- Engagement rate bar -->
-          <div class="chart-card glass border border-white/8">
-            <div class="flex items-center justify-between mb-4">
-              <div>
-                <h3>Account Health Score</h3>
-                <p class="text-xs text-neutral-600 mt-0.5">Composite metric based on engagement, reach & growth</p>
-              </div>
-              <div class="font-display text-3xl font-bold text-white" id="health-score">—</div>
-            </div>
-            <div class="grid grid-cols-3 gap-4">
-              <div>
-                <div class="flex justify-between text-xs mb-1"><span class="text-neutral-500">Engagement</span><span class="text-white" id="health-eng">—</span></div>
-                <div class="progress-bar"><div class="progress-fill" id="pb-eng" style="width:0%"></div></div>
-              </div>
-              <div>
-                <div class="flex justify-between text-xs mb-1"><span class="text-neutral-500">Reach Rate</span><span class="text-white" id="health-reach">—</span></div>
-                <div class="progress-bar"><div class="progress-fill" id="pb-reach" style="width:0%"></div></div>
-              </div>
-              <div>
-                <div class="flex justify-between text-xs mb-1"><span class="text-neutral-500">Growth</span><span class="text-white" id="health-growth">—</span></div>
-                <div class="progress-bar"><div class="progress-fill" id="pb-growth" style="width:0%"></div></div>
-              </div>
-            </div>
-          </div>
-          <!-- Charts row -->
-          <div class="grid md:grid-cols-2 gap-4">
-            <div class="chart-card glass border border-white/8">
-              <div class="flex items-center justify-between mb-3">
-                <h3>Follower Growth</h3>
-                <span class="text-xs text-neutral-600 border border-white/8 rounded-full px-2 py-0.5">Last 30 days</span>
-              </div>
-              <canvas id="chart-followers" height="120"></canvas>
-              <p class="chart-note">📌 Growth tracked locally each visit.</p>
-            </div>
-            <div class="chart-card glass border border-white/8">
-              <h3 class="mb-3">Reach vs Views (28d)</h3>
-              <canvas id="chart-reach" height="120"></canvas>
-            </div>
-          </div>
-          <!-- Top post preview -->
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-4">🏆 Top Performing Posts</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="top-posts-row">
-              <p class="text-sm text-neutral-600 col-span-4">Loading...</p>
-            </div>
-          </div>
-        </section>
+// Clouds
+function spawnCloud() {
+  const c = document.createElement('div');
+  c.className = 'cloud';
+  c.textContent = '☁️';
+  c.style.top = rand(2, 30) + 'vh';
+  c.style.fontSize = rand(28, 46) + 'px';
+  c.style.animationDuration = rand(18, 30) + 's';
+  bgLayer.appendChild(c);
+  setTimeout(() => c.remove(), 30000);
+}
+setInterval(spawnCloud, 6000);
+spawnCloud();
 
-        <!-- POSTS -->
-        <section id="section-posts" class="section hidden space-y-4">
-          <div class="flex items-center gap-3 flex-wrap">
-            <div class="relative flex-1 min-w-[180px]">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600 text-sm">🔍</span>
-              <input type="text" class="search-input" id="post-search" placeholder="Search posts..." oninput="filterPosts()"/>
-            </div>
-            <div class="flex gap-1.5">
-              <button class="tab-btn active" onclick="filterType('ALL', this)">All</button>
-              <button class="tab-btn" onclick="filterType('IMAGE', this)">Images</button>
-              <button class="tab-btn" onclick="filterType('VIDEO', this)">Video</button>
-              <button class="tab-btn" onclick="filterType('CAROUSEL_ALBUM', this)">Carousels</button>
-            </div>
-            <select class="compare-select" style="width:auto;padding:7px 12px;font-size:12.5px;" onchange="sortPosts(this.value)" id="sort-select">
-              <option value="date">Newest first</option>
-              <option value="likes">Most liked</option>
-              <option value="comments">Most comments</option>
-            </select>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" id="posts-grid">
-            <p class="text-sm text-neutral-600">Loading posts...</p>
-          </div>
-          <div class="text-center">
-            <button id="load-more-btn" class="btn-ghost hidden" onclick="loadMorePosts()">Load more posts</button>
-          </div>
-        </section>
+// Bubbles
+function spawnBubble() {
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  const size = rand(8, 22);
+  b.style.width = size + 'px';
+  b.style.height = size + 'px';
+  b.style.left = rand(0, 96) + 'vw';
+  b.style.animationDuration = rand(8, 14) + 's';
+  bgLayer.appendChild(b);
+  setTimeout(() => b.remove(), 14000);
+}
+setInterval(spawnBubble, 1000);
 
-        <!-- COMPARE -->
-        <section id="section-compare" class="section hidden space-y-5">
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-1">Compare Any Two Posts</h3>
-            <p class="text-xs text-neutral-600 mb-5">Pick two posts to see a side-by-side breakdown.</p>
-            <div class="grid grid-cols-5 gap-4 items-center">
-              <div class="col-span-2">
-                <div class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Post A</div>
-                <select id="compare-a" class="compare-select"><option value="">— Select —</option></select>
-              </div>
-              <div class="col-span-1 text-center font-display font-bold text-neutral-600 text-lg">VS</div>
-              <div class="col-span-2">
-                <div class="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Post B</div>
-                <select id="compare-b" class="compare-select"><option value="">— Select —</option></select>
-              </div>
-            </div>
-            <button class="btn-primary mt-5" onclick="runCompare()">Compare →</button>
-          </div>
-          <div id="compare-result" class="hidden space-y-4">
-            <div class="grid md:grid-cols-2 gap-4">
-              <div class="chart-card glass border border-white/8" id="ccard-a"></div>
-              <div class="chart-card glass border border-white/8" id="ccard-b"></div>
-            </div>
-            <div class="chart-card glass border border-white/8">
-              <h3 class="mb-4">Side-by-Side Stats</h3>
-              <canvas id="chart-compare" height="120"></canvas>
-            </div>
-            <div class="winner-banner" id="compare-winner"></div>
-          </div>
-        </section>
+// Floating teddy bears
+function spawnTeddy() {
+  const t = document.createElement('div');
+  t.className = 'teddy-float';
+  t.textContent = '🧸';
+  t.style.left = rand(5, 88) + 'vw';
+  t.style.top = rand(8, 85) + 'vh';
+  t.style.fontSize = rand(20, 34) + 'px';
+  t.style.animationDelay = rand(0, 2) + 's';
+  bgLayer.appendChild(t);
+  setTimeout(() => t.remove(), 9000);
+}
+setInterval(spawnTeddy, 2600);
+spawnTeddy();
+spawnTeddy();
 
-        <!-- ENGAGEMENT -->
-        <section id="section-engagement" class="section hidden space-y-5">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Avg Likes / Post</div>
-              <div class="stat-value" id="eng-avg-likes">—</div>
-            </div>
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Avg Comments / Post</div>
-              <div class="stat-value" id="eng-avg-comments">—</div>
-            </div>
-            <div class="stat-card glass border border-white/8 accent-card">
-              <div class="stat-label">Engagement Rate</div>
-              <div class="stat-value" id="eng-rate">—</div>
-              <div class="stat-delta" id="eng-rate-label">per post avg</div>
-            </div>
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Best Post Likes</div>
-              <div class="stat-value" id="eng-best-likes">—</div>
-            </div>
-          </div>
-          <div class="grid md:grid-cols-2 gap-4">
-            <div class="chart-card glass border border-white/8">
-              <h3 class="mb-3">Likes per Post (Recent 20)</h3>
-              <canvas id="chart-eng-likes" height="140"></canvas>
-            </div>
-            <div class="chart-card glass border border-white/8">
-              <h3 class="mb-3">Comments per Post (Recent 20)</h3>
-              <canvas id="chart-eng-comments" height="140"></canvas>
-            </div>
-          </div>
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-3">Likes vs Comments Correlation</h3>
-            <p class="text-xs text-neutral-600 mb-3">Do posts with more likes also get more comments?</p>
-            <canvas id="chart-eng-scatter" height="120"></canvas>
-          </div>
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-1">Media Type Performance</h3>
-            <p class="text-xs text-neutral-600 mb-4">Which format drives the most engagement?</p>
-            <div id="media-type-breakdown" class="space-y-3">Loading...</div>
-          </div>
-        </section>
+/* =========================================================
+   TYPING ANIMATION FOR HERO SUBTEXT
+   ========================================================= */
+const line1 = "Hum tumko samajhte hain... aur dil se maafi maangte hain. 💕";
+const typedEl = document.getElementById('typedLine1');
+let idx = 0;
+function typeChar() {
+  if (idx <= line1.length) {
+    typedEl.textContent = line1.slice(0, idx);
+    idx++;
+    setTimeout(typeChar, 42);
+  } else {
+    typedEl.style.borderRight = 'none';
+  }
+}
+setTimeout(typeChar, 800);
 
-        <!-- HASHTAGS -->
-        <section id="section-hashtags" class="section hidden space-y-5">
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-1">Most Used Hashtags</h3>
-            <p class="text-xs text-neutral-600 mb-4">Frequency across your last 50 posts.</p>
-            <canvas id="chart-hashtags" height="150"></canvas>
-          </div>
-          <div class="grid md:grid-cols-2 gap-4">
-            <div class="chart-card glass border border-white/8">
-              <h3 class="mb-4">Hashtags per Post</h3>
-              <div id="hashtag-post-list">Loading...</div>
-            </div>
-            <div class="chart-card glass border border-white/8">
-              <h3 class="mb-4">All Hashtags</h3>
-              <div id="hashtag-cloud" class="flex flex-wrap gap-1">Loading...</div>
-            </div>
-          </div>
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-1">Hashtag → Likes Correlation</h3>
-            <p class="text-xs text-neutral-600 mb-4">Do more hashtags mean more engagement?</p>
-            <canvas id="chart-hashtag-corr" height="120"></canvas>
-          </div>
-        </section>
+/* =========================================================
+   MESSAGE CARD — sequential line reveal on scroll into view
+   ========================================================= */
+const msgLines = ['msgLine1','msgLine2','msgLine3','msgLine4','msgLine5'];
+const cardObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      msgLines.forEach((id, i) => {
+        document.getElementById(id).style.animationDelay = (i * 0.55) + 's';
+      });
+      cardObserver.disconnect();
+    }
+  });
+}, { threshold: 0.3 });
+cardObserver.observe(document.getElementById('msgLine1'));
 
-        <!-- CAPTIONS -->
-        <section id="section-captions" class="section hidden space-y-5">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="stat-card glass border border-white/8 accent-card">
-              <div class="stat-label">Avg Caption Length</div>
-              <div class="stat-value" id="cap-avg-len">—</div>
-              <div class="stat-delta">characters</div>
-            </div>
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Best Caption Length</div>
-              <div class="stat-value" id="cap-best-len">—</div>
-              <div class="stat-delta">chars (most likes)</div>
-            </div>
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Longest Caption</div>
-              <div class="stat-value" id="cap-longest">—</div>
-              <div class="stat-delta">characters</div>
-            </div>
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Posts Without Caption</div>
-              <div class="stat-value" id="cap-nocap">—</div>
-            </div>
-          </div>
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-1">Caption Length vs Likes</h3>
-            <p class="text-xs text-neutral-600 mb-4">Each dot = one post. Find your sweet spot.</p>
-            <canvas id="chart-caption-scatter" height="140"></canvas>
-          </div>
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-4">Avg Likes by Caption Length Bucket</h3>
-            <canvas id="chart-caption-buckets" height="100"></canvas>
-          </div>
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-4">Emoji Usage vs Engagement</h3>
-            <div id="emoji-analysis" class="space-y-3">Loading...</div>
-          </div>
-        </section>
+/* =========================================================
+   SHORTS PLAYER CONTROL (via YouTube IFrame API)
+   Starts autoplay + muted (browser requirement).
+   Button toggles mute/unmute and play/pause.
+   ========================================================= */
+const musicBtn = document.getElementById('musicBtn');
+const musicIcon = document.getElementById('musicIcon');
+let ytPlayer = null;
+let ytReady = false;
+let soundOn = false;
 
-        <!-- AUDIENCE -->
-        <section id="section-audience" class="section hidden space-y-5">
-          <div class="grid md:grid-cols-2 gap-4">
-            <div class="chart-card glass border border-white/8">
-              <h3 class="mb-4">Gender Distribution</h3>
-              <canvas id="chart-gender" height="160"></canvas>
-            </div>
-            <div class="chart-card glass border border-white/8">
-              <h3 class="mb-4">Age Range</h3>
-              <canvas id="chart-age" height="160"></canvas>
-            </div>
-          </div>
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-1">🕐 Follower Activity Heatmap</h3>
-            <p class="text-xs text-neutral-600 mb-4">When your audience is online. Brighter = more active.</p>
-            <div id="heatmap-container" class="overflow-x-auto">Loading...</div>
-          </div>
-          <div class="grid md:grid-cols-2 gap-4">
-            <div class="chart-card glass border border-white/8">
-              <h3 class="mb-4">Top Countries</h3>
-              <div id="audience-countries">Loading...</div>
-            </div>
-            <div class="chart-card glass border border-white/8">
-              <h3 class="mb-4">Top Cities</h3>
-              <div id="audience-cities">Loading...</div>
-            </div>
-          </div>
-        </section>
+// Called automatically by the YouTube IFrame API once it loads
+function onYouTubeIframeAPIReady() {
+  ytPlayer = new YT.Player('shortsPlayer', {
+    events: {
+      onReady: () => { ytReady = true; }
+    }
+  });
+}
 
-        <!-- REACH -->
-        <section id="section-reach" class="section hidden space-y-5">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="stat-card glass border border-white/8 accent-card">
-              <div class="stat-label">Accounts Reached</div>
-              <div class="stat-value" id="reach-accounts">—</div>
-            </div>
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Total Views</div>
-              <div class="stat-value" id="reach-impressions">—</div>
-            </div>
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Website Clicks</div>
-              <div class="stat-value" id="reach-website">—</div>
-            </div>
-            <div class="stat-card glass border border-white/8">
-              <div class="stat-label">Accounts Engaged</div>
-              <div class="stat-value" id="reach-email">—</div>
-            </div>
-          </div>
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-4">Daily Views (Last 30 Days)</h3>
-            <canvas id="chart-impressions-daily" height="120"></canvas>
-          </div>
-        </section>
+musicBtn.addEventListener('click', () => {
+  if (!ytReady || !ytPlayer) return;
+  if (!soundOn) {
+    ytPlayer.unMute();
+    ytPlayer.playVideo();
+    musicIcon.textContent = '🎵';
+    soundOn = true;
+  } else {
+    ytPlayer.mute();
+    musicIcon.textContent = '🔇';
+    soundOn = false;
+  }
+});
 
-        <!-- BEST TIME -->
-        <section id="section-besttime" class="section hidden space-y-5">
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-1">🕐 Optimal Posting Times</h3>
-            <p class="text-xs text-neutral-600 mb-5">Based on your follower activity patterns. Post during bright windows.</p>
-            <div id="best-time-heatmap" class="overflow-x-auto">Loading...</div>
-          </div>
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-4">Best Days to Post</h3>
-            <canvas id="chart-best-day" height="100"></canvas>
-          </div>
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-1">📅 Posting Consistency</h3>
-            <p class="text-xs text-neutral-600 mb-4">How often you post by day of week.</p>
-            <canvas id="chart-post-day" height="100"></canvas>
-          </div>
-          <div class="grid md:grid-cols-3 gap-4" id="time-recs">
-            <!-- filled by JS -->
-          </div>
-        </section>
+/* =========================================================
+   "ABHI SOCHUNGI" BUTTON — runs away when hovered/clicked
+   ========================================================= */
+const thinkBtn = document.getElementById('thinkBtn');
+const buttonSection = thinkBtn.closest('section');
+let shrinkStep = 0;
 
-        <!-- EXPORT -->
-        <section id="section-export" class="section hidden space-y-5">
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-1">Export Your Data</h3>
-            <p class="text-xs text-neutral-600 mb-6">Download your Instagram analytics as a structured JSON or CSV report.</p>
-            <div class="grid md:grid-cols-2 gap-4">
-              <div class="glass border border-white/8 rounded-2xl p-5 space-y-3">
-                <div class="text-2xl">📦</div>
-                <div class="font-display font-semibold text-white">JSON Export</div>
-                <p class="text-xs text-neutral-500">Full structured data including posts, insights, follower history, and computed metrics.</p>
-                <button class="btn-primary text-sm" onclick="exportJSON()">Download JSON</button>
-              </div>
-              <div class="glass border border-white/8 rounded-2xl p-5 space-y-3">
-                <div class="text-2xl">📊</div>
-                <div class="font-display font-semibold text-white">CSV Export</div>
-                <p class="text-xs text-neutral-500">Posts table with likes, comments, captions, dates, and media type — ready for Excel.</p>
-                <button class="btn-primary text-sm" onclick="exportCSV()">Download CSV</button>
-              </div>
-            </div>
-          </div>
-          <div class="chart-card glass border border-white/8">
-            <h3 class="mb-4">Follower History Log</h3>
-            <div id="follower-history-table" class="overflow-x-auto">Loading...</div>
-          </div>
-        </section>
+function runAway() {
+  const sectionRect = buttonSection.getBoundingClientRect();
+  const btnRect = thinkBtn.getBoundingClientRect();
 
-      </div><!-- /sections-wrapper -->
-    </main>
-  </div>
+  const maxX = Math.max(sectionRect.width - btnRect.width - 10, 10);
+  const maxY = Math.max(sectionRect.height - btnRect.height - 10, 10);
 
-  <!-- Post Modal -->
-  <div id="post-modal" class="modal-overlay hidden" onclick="closeModal(event)">
-    <div class="modal-card" id="modal-content"></div>
-  </div>
+  const newX = rand(0, maxX);
+  const newY = rand(0, maxY);
+  const rotation = rand(-25, 25);
 
-</div><!-- /z-10 wrapper -->
+  thinkBtn.style.position = 'absolute';
+  thinkBtn.style.left = newX + 'px';
+  thinkBtn.style.top = newY + 'px';
+  thinkBtn.style.transform = `rotate(${rotation}deg)`;
 
-<script src="app.js"></script>
+  thinkBtn.classList.remove('shake-run');
+  void thinkBtn.offsetWidth; // reflow to restart animation
+  thinkBtn.classList.add('shake-run');
+
+  // shrink a little each time, down to a minimum
+  shrinkStep = Math.min(shrinkStep + 1, 6);
+  const scale = Math.max(1 - shrinkStep * 0.08, 0.55);
+  thinkBtn.style.fontSize = (14 * scale) + 'px';
+  thinkBtn.style.padding = `${12*scale}px ${20*scale}px`;
+}
+
+thinkBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  runAway();
+});
+thinkBtn.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  runAway();
+}, { passive: false });
+thinkBtn.addEventListener('mouseenter', runAway);
+
+/* =========================================================
+   "MAAF KAR DIYA" BUTTON — confetti + hearts explosion + popup
+   ========================================================= */
+const forgiveBtn = document.getElementById('forgiveBtn');
+const popupOverlay = document.getElementById('popupOverlay');
+const closePopup = document.getElementById('closePopup');
+
+const confettiColors = ['#f9a8d4','#f472b6','#d8b4fe','#c084fc','#fecdd3','#fff1f2','#fbcfe8'];
+
+function launchConfetti() {
+  for (let i = 0; i < 45; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = rand(0, 100) + 'vw';
+    piece.style.width = rand(6, 12) + 'px';
+    piece.style.height = rand(6, 12) + 'px';
+    piece.style.background = confettiColors[Math.floor(Math.random()*confettiColors.length)];
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    piece.style.animationDuration = rand(2.2, 4) + 's';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 4200);
+  }
+}
+
+function explodeHearts() {
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+  for (let i = 0; i < 24; i++) {
+    const h = document.createElement('div');
+    h.className = 'explode-heart';
+    h.textContent = heartEmojis[Math.floor(Math.random()*heartEmojis.length)];
+    h.style.left = centerX + 'px';
+    h.style.top = centerY + 'px';
+    h.style.fontSize = rand(16, 30) + 'px';
+    const angle = Math.random() * Math.PI * 2;
+    const dist = rand(80, 220);
+    h.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+    h.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1500);
+  }
+}
+
+forgiveBtn.addEventListener('click', () => {
+  launchConfetti();
+  explodeHearts();
+  document.body.classList.add('forgiven-bg');
+
+  popupOverlay.classList.remove('hidden');
+  popupOverlay.classList.add('flex');
+
+  // little celebration burst again after a beat
+  setTimeout(() => { explodeHearts(); }, 500);
+});
+
+closePopup.addEventListener('click', () => {
+  popupOverlay.classList.add('hidden');
+  popupOverlay.classList.remove('flex');
+});
+</script>
+
 </body>
 </html>
